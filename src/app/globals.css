@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+:root {
+  --brand-bg: #0f0c08;
+  --brand-surface: #1a1610;
+  --brand-card: #231e16;
+  --brand-border: #352d22;
+  --brand-muted: #8a7d6b;
+  --brand-text: #f5e6d0;
+  --brand-gold: #f59e0b;
+}
+
+body {
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--brand-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brand-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-muted);
+}
+
+/* Slider custom */
+input[type='range'] {
+  accent-color: var(--brand-gold);
+}

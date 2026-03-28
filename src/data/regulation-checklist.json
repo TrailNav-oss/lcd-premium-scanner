@@ -1,0 +1,42 @@
+[
+  {
+    "category": "Avant l'achat",
+    "items": [
+      { "label": "Verifier le reglement de copropriete (clause LCD/meuble tourisme)", "critical": true },
+      { "label": "Verifier le PLU de la commune (changement d'usage ?)", "critical": true },
+      { "label": "Verifier si la commune impose une declaration/autorisation LCD", "critical": true },
+      { "label": "Estimer la taxe fonciere et la CFE", "critical": false },
+      { "label": "Verifier l'etat du DPE (objectif D minimum apres reno)", "critical": false }
+    ]
+  },
+  {
+    "category": "Demarches administratives",
+    "items": [
+      { "label": "Declarer le meuble de tourisme en mairie", "critical": true },
+      { "label": "Obtenir le numero d'enregistrement (obligatoire depuis 2024)", "critical": true },
+      { "label": "S'immatriculer au greffe du tribunal de commerce (LMNP)", "critical": true },
+      { "label": "Adherer a un centre de gestion agree (CGA) pour avantage fiscal", "critical": false },
+      { "label": "Souscrire une assurance PNO + RC pro", "critical": true }
+    ]
+  },
+  {
+    "category": "Fiscalite LMNP",
+    "items": [
+      { "label": "Choisir le regime : micro-BIC (71%) ou reel", "critical": true },
+      { "label": "Si reel : faire appel a un comptable specialise LMNP", "critical": false },
+      { "label": "Amortir le bien, les meubles, les travaux (regime reel)", "critical": false },
+      { "label": "Declarer les revenus LCD (formulaire P0i + liasse 2031)", "critical": true },
+      { "label": "Collecter et reverser la taxe de sejour", "critical": true }
+    ]
+  },
+  {
+    "category": "Mise en location",
+    "items": [
+      { "label": "Creer l'annonce Airbnb avec photos pro", "critical": true },
+      { "label": "Installer une serrure connectee (check-in autonome)", "critical": false },
+      { "label": "Preparer le livret d'accueil", "critical": false },
+      { "label": "Mettre en place le menage entre chaque sejour", "critical": true },
+      { "label": "Configurer le channel manager si multi-plateforme", "critical": false }
+    ]
+  }
+]

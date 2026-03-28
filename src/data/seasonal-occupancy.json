@@ -1,0 +1,17 @@
+{
+  "description": "Coefficients saisonniers d'occupation LCD zone Bourgoin-Jallieu. Base 1.0 = taux moyen annuel.",
+  "months": [
+    { "month": "Janvier",   "coeff": 0.65, "label": "Jan" },
+    { "month": "Fevrier",   "coeff": 0.70, "label": "Fev" },
+    { "month": "Mars",      "coeff": 0.80, "label": "Mar" },
+    { "month": "Avril",     "coeff": 0.90, "label": "Avr" },
+    { "month": "Mai",       "coeff": 1.05, "label": "Mai" },
+    { "month": "Juin",      "coeff": 1.15, "label": "Jun" },
+    { "month": "Juillet",   "coeff": 1.30, "label": "Jul" },
+    { "month": "Aout",      "coeff": 1.25, "label": "Aou" },
+    { "month": "Septembre", "coeff": 1.10, "label": "Sep" },
+    { "month": "Octobre",   "coeff": 0.90, "label": "Oct" },
+    { "month": "Novembre",  "coeff": 0.75, "label": "Nov" },
+    { "month": "Decembre",  "coeff": 0.85, "label": "Dec" }
+  ]
+}

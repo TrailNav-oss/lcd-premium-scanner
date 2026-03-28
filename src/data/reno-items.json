@@ -1,0 +1,46 @@
+[
+  {
+    "category": "Essentiel",
+    "items": [
+      { "name": "Peinture complete (murs + plafonds)", "prixMin": 2000, "prixMax": 4000, "unit": "T2 40m2", "priority": "essentiel" },
+      { "name": "Sol (LVT clipsable premium)", "prixMin": 1500, "prixMax": 3000, "unit": "T2 40m2", "priority": "essentiel" },
+      { "name": "Salle de bain (douche italienne)", "prixMin": 3000, "prixMax": 7000, "unit": "forfait", "priority": "essentiel" },
+      { "name": "Cuisine equipee (IKEA/Leroy Merlin)", "prixMin": 2500, "prixMax": 5000, "unit": "forfait", "priority": "essentiel" },
+      { "name": "Electricite (mise aux normes)", "prixMin": 2000, "prixMax": 5000, "unit": "T2", "priority": "essentiel" },
+      { "name": "Plomberie (mise aux normes)", "prixMin": 1000, "prixMax": 3000, "unit": "forfait", "priority": "essentiel" },
+      { "name": "Menuiseries (fenetres double vitrage)", "prixMin": 2000, "prixMax": 5000, "unit": "3-4 fenetres", "priority": "essentiel" }
+    ]
+  },
+  {
+    "category": "Wow factor",
+    "items": [
+      { "name": "Verriere atelier", "prixMin": 300, "prixMax": 800, "unit": "piece", "priority": "wow" },
+      { "name": "Tete de lit sur mesure", "prixMin": 200, "prixMax": 600, "unit": "piece", "priority": "wow" },
+      { "name": "Eclairage d'ambiance (LED indirect)", "prixMin": 300, "prixMax": 800, "unit": "appartement", "priority": "wow" },
+      { "name": "Papier peint panoramique", "prixMin": 150, "prixMax": 400, "unit": "mur", "priority": "wow" },
+      { "name": "Robinetterie design (noir mat)", "prixMin": 200, "prixMax": 500, "unit": "lot", "priority": "wow" },
+      { "name": "Miroir XXL salle de bain", "prixMin": 100, "prixMax": 300, "unit": "piece", "priority": "wow" }
+    ]
+  },
+  {
+    "category": "Equipement LCD",
+    "items": [
+      { "name": "Literie premium (matelas + linge)", "prixMin": 500, "prixMax": 1200, "unit": "chambre", "priority": "essentiel" },
+      { "name": "Electromenager (lave-linge, micro-ondes, cafetiere)", "prixMin": 500, "prixMax": 1000, "unit": "lot", "priority": "essentiel" },
+      { "name": "Smart TV 43\"+ avec Netflix", "prixMin": 250, "prixMax": 500, "unit": "piece", "priority": "essentiel" },
+      { "name": "Serrure connectee (Nuki/Igloohome)", "prixMin": 150, "prixMax": 300, "unit": "piece", "priority": "essentiel" },
+      { "name": "Kit deco complet (coussins, plaids, plantes)", "prixMin": 300, "prixMax": 800, "unit": "appartement", "priority": "wow" },
+      { "name": "Machine Nespresso + capsules", "prixMin": 80, "prixMax": 150, "unit": "piece", "priority": "wow" }
+    ]
+  },
+  {
+    "category": "DPE / Energie",
+    "items": [
+      { "name": "Isolation murs interieurs", "prixMin": 2000, "prixMax": 5000, "unit": "T2", "priority": "essentiel" },
+      { "name": "Ballon eau chaude thermodynamique", "prixMin": 1500, "prixMax": 3000, "unit": "piece", "priority": "essentiel" },
+      { "name": "VMC double flux", "prixMin": 1500, "prixMax": 3500, "unit": "piece", "priority": "essentiel" },
+      { "name": "Radiateurs electriques a inertie", "prixMin": 200, "prixMax": 500, "unit": "piece", "priority": "essentiel" },
+      { "name": "Clim reversible (PAC air-air)", "prixMin": 1500, "prixMax": 3500, "unit": "piece", "priority": "wow" }
+    ]
+  }
+]
