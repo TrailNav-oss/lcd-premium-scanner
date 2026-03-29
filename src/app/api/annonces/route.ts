@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { Annonce } from '@/types/annonce'
 import { generateSeedData } from '@/lib/scraper/seed'
+import { getAnnonces, getSourceHealth } from '@/lib/store/cache'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
 
-  // Always use seed data (in-memory cache is handled by /api/scrape which returns annonces directly)
-  // This route serves as the filter/sort endpoint over seed data on cold start
-  const annonces: Annonce[] = generateSeedData()
+  // Use shared cache, fallback to seed data on cold start
+  const cached = getAnnonces()
+  const annonces: Annonce[] = cached.length > 0 ? cached : generateSeedData()
 
   // Apply filters
   const prixMin = searchParams.get('prixMin') ? Number(searchParams.get('prixMin')) : undefined
@@ -30,10 +31,22 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get('search')
   const id = searchParams.get('id') // fetch single annonce by id
 
+  // Source health query
+  if (searchParams.get('health') === 'true') {
+    return NextResponse.json({ sourceHealth: getSourceHealth() })
+  }
+
   // Single annonce lookup
   if (id) {
     const found = annonces.find(a => a.id === id)
-    return NextResponse.json({ annonce: found || null })
+    // If not found, suggest similar annonces
+    if (!found) {
+      const similar = annonces
+        .filter(a => a.isActive)
+        .slice(0, 5)
+      return NextResponse.json({ annonce: null, similar })
+    }
+    return NextResponse.json({ annonce: found })
   }
 
   let filtered = annonces

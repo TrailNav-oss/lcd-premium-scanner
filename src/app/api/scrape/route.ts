@@ -6,13 +6,10 @@ import { scrapePAP } from '@/lib/scraper/pap'
 import { generateSeedData } from '@/lib/scraper/seed'
 import { normalizeAll } from '@/lib/scraper/parser'
 import { deduplicateAnnonces } from '@/lib/scraper/dedup'
+import { getAnnonces, setAnnonces, updateSourceHealth, getSourceHealth } from '@/lib/store/cache'
 import type { Annonce } from '@/types/annonce'
 
-// In-memory cache (persists across requests within the same serverless instance)
-let memoryCache: Annonce[] = []
-
-// Timeout pour les scrapers qui ne répondent pas
-const SCRAPER_TIMEOUT = 15000 // 15s
+const SCRAPER_TIMEOUT = 30000 // 30s (augmenté pour laisser le retry backoff agir)
 
 function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<T> {
   return Promise.race([
@@ -22,11 +19,10 @@ function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<
 }
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60 // Vercel: max 60s pour les API routes
+export const maxDuration = 60
 
 export async function GET() {
   try {
-    // Scrape all sources in parallel with timeout
     const [lbcResult, bieniciResult, selogerResult, papResult] = await Promise.all([
       withTimeout(scrapeLeBonCoin(3), SCRAPER_TIMEOUT, 'LeBonCoin')
         .catch(e => ({ annonces: [], errors: [`LeBonCoin: ${e instanceof Error ? e.message : e}`] })),
@@ -37,6 +33,12 @@ export async function GET() {
       withTimeout(scrapePAP(2), SCRAPER_TIMEOUT, 'PAP')
         .catch(e => ({ annonces: [], errors: [`PAP: ${e instanceof Error ? e.message : e}`] })),
     ])
+
+    // Track source health
+    updateSourceHealth('LEBONCOIN', lbcResult.annonces.length, lbcResult.errors[0] || null)
+    updateSourceHealth('BIENICI', bieniciResult.annonces.length, bieniciResult.errors[0] || null)
+    updateSourceHealth('SELOGER', selogerResult.annonces.length, selogerResult.errors[0] || null)
+    updateSourceHealth('PAP', papResult.annonces.length, papResult.errors[0] || null)
 
     const allRaw = [
       ...lbcResult.annonces,
@@ -51,30 +53,28 @@ export async function GET() {
       ...papResult.errors,
     ]
 
-    // Normalize and score all annonces
+    // Normalize, geo-filter, and score
     const normalized = normalizeAll(allRaw)
 
-    // If no real data scraped, use seed data (realistic market data)
+    // Seed data only if we got almost nothing real
     const usingSeedData = normalized.length < 5
     const seedData = usingSeedData ? generateSeedData() : []
 
-    // Combine real + seed, deduplicate
     const combined = [...normalized, ...seedData]
     const deduped = deduplicateAnnonces(combined)
 
-    // Merge with in-memory cache (preserve favorites, notes, price history)
-    const merged = mergeWithExisting(deduped, memoryCache)
+    // Merge with existing cache (preserve favorites, notes, price history)
+    const existing = getAnnonces()
+    const merged = mergeWithExisting(deduped, existing)
 
-    // Sort by pepite score desc
     merged.sort((a, b) => (b.pepiteScore || 0) - (a.pepiteScore || 0))
 
-    // Save to memory cache
-    memoryCache = merged
+    // Persist to shared cache
+    setAnnonces(merged)
 
-    // Count excluded (viager, etc.)
     const excluded = merged.filter(a => a.excludedByDefault).length
+    const geoFiltered = allRaw.length - normalized.length
 
-    // Build helpful hint when scrapers fail
     const scrapersDown = allErrors.length > 0 && normalized.length === 0
     const hint = scrapersDown
       ? 'Les sites immobiliers bloquent les requetes serveur (anti-bot). Les donnees affichees sont des annonces realistes basees sur le marche actuel. Pour du scraping reel, utilisez le script Playwright local : npx tsx scripts/scrape-local.ts'
@@ -90,10 +90,15 @@ export async function GET() {
         seloger: selogerResult.annonces.length,
         pap: papResult.annonces.length,
         totalRaw: allRaw.length,
+        geoFiltered,
         afterDedup: deduped.length,
         afterMerge: merged.length,
         excluded,
+        newCount: merged.filter(a => !existing.find(e => e.id === a.id)).length,
+        updatedCount: merged.filter(a => existing.find(e => e.id === a.id && e.isActive)).length,
+        expiredCount: merged.filter(a => !a.isActive).length,
       },
+      sourceHealth: getSourceHealth(),
       errors: allErrors,
       annonces: merged,
     })
@@ -105,32 +110,23 @@ export async function GET() {
   }
 }
 
-function mergeWithExisting(
-  fresh: Annonce[],
-  existing: Annonce[]
-): Annonce[] {
+function mergeWithExisting(fresh: Annonce[], existing: Annonce[]): Annonce[] {
   const existingMap = new Map(existing.map(a => [a.id, a]))
 
   const merged = fresh.map(annonce => {
     const prev = existingMap.get(annonce.id)
     if (prev) {
-      // Track price changes
-      const prixHistorique = prev.prixInitial && annonce.prix !== prev.prix
-        ? annonce.prix
-        : prev.prix
-
       return {
         ...annonce,
         isFavorite: prev.isFavorite,
         notes: prev.notes,
         prixInitial: prev.prixInitial || annonce.prix,
-        prix: prixHistorique,
       }
     }
     return annonce
   })
 
-  // Keep existing annonces not found in fresh (mark inactive)
+  // Keep existing not in fresh → mark inactive after 2+ missed scans
   existingMap.forEach((prev, id) => {
     if (!merged.find(a => a.id === id)) {
       merged.push({ ...prev, isActive: false })

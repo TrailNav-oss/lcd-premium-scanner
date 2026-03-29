@@ -1,19 +1,7 @@
 import type { RawAnnonce } from './types'
+import { papHeaders, fetchWithRetry, randomDelay } from './http-client'
 
-// PAP.fr search API
 const PAP_API = 'https://ws.pap.fr/immobilier/annonces'
-
-const HEADERS = {
-  'Accept': 'application/json',
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  'Referer': 'https://www.pap.fr/',
-  'Origin': 'https://www.pap.fr',
-  'Accept-Language': 'fr-FR,fr;q=0.9',
-  'Accept-Encoding': 'gzip, deflate, br',
-  'Sec-Fetch-Dest': 'empty',
-  'Sec-Fetch-Mode': 'cors',
-  'Sec-Fetch-Site': 'same-origin',
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapAnnonce(ad: any): RawAnnonce | null {
@@ -65,7 +53,7 @@ export async function scrapePAP(maxPages = 2): Promise<{ annonces: RawAnnonce[];
         typeBien: 'appartement',
         typeTransaction: 'vente',
         geo: 'bourgoin-jallieu-38-g',
-        rayonMax: '20', // 20km autour
+        rayonMax: '50',
         prixMin: '30000',
         prixMax: '200000',
         nbPiecesMin: '1',
@@ -74,8 +62,10 @@ export async function scrapePAP(maxPages = 2): Promise<{ annonces: RawAnnonce[];
         size: '25',
       })
 
-      const res = await fetch(`${PAP_API}?${params}`, {
-        headers: HEADERS,
+      const res = await fetchWithRetry(`${PAP_API}?${params}`, {
+        headers: papHeaders(),
+        retries: 2,
+        backoffMs: 2000,
       })
 
       if (!res.ok) {
@@ -92,7 +82,7 @@ export async function scrapePAP(maxPages = 2): Promise<{ annonces: RawAnnonce[];
       }
 
       if (page < maxPages) {
-        await new Promise(r => setTimeout(r, 2000))
+        await randomDelay(2000, 5000)
       }
     } catch (e) {
       errors.push(`PAP page ${page}: ${e instanceof Error ? e.message : 'Unknown error'}`)

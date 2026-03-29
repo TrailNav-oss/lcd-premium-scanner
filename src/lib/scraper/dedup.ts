@@ -1,44 +1,85 @@
 import type { Annonce } from '@/types/annonce'
 
-// Deduplicate annonces cross-site by fuzzy matching address + surface + price
+// Deduplicate annonces cross-platform
+// Strategy: group by normalized address + price ±10% + surface ±5%
+// Keep the one with the most info, link others via alsoFoundOn
+
 export function deduplicateAnnonces(annonces: Annonce[]): Annonce[] {
-  const seen = new Map<string, Annonce>()
+  const groups = new Map<string, Annonce[]>()
 
   for (const annonce of annonces) {
     const key = buildDedupKey(annonce)
-
-    if (seen.has(key)) {
-      const existing = seen.get(key)!
-      // Keep the one with more info (more photos, description, etc.)
-      const existingScore = qualityScore(existing)
-      const newScore = qualityScore(annonce)
-      if (newScore > existingScore) {
-        seen.set(key, annonce)
-      }
-    } else {
-      seen.set(key, annonce)
-    }
+    const group = groups.get(key) || []
+    group.push(annonce)
+    groups.set(key, group)
   }
 
-  return Array.from(seen.values())
+  const result: Annonce[] = []
+  for (const group of Array.from(groups.values())) {
+    if (group.length === 1) {
+      result.push(group[0])
+      continue
+    }
+
+    // Sort by quality score desc — best one wins
+    group.sort((a, b) => qualityScore(b) - qualityScore(a))
+    const best = group[0]
+
+    // Enrich with "also found on" info
+    const otherSources = group
+      .slice(1)
+      .map(a => a.source)
+      .filter(s => s !== best.source)
+
+    if (otherSources.length > 0) {
+      best.description = best.description
+        ? `${best.description}\n\n[Aussi trouvee sur : ${otherSources.join(', ')}]`
+        : `[Aussi trouvee sur : ${otherSources.join(', ')}]`
+    }
+
+    result.push(best)
+  }
+
+  return result
 }
 
 function buildDedupKey(a: Annonce): string {
-  // Fuzzy key: ville + price range (±5%) + surface range (±3m²)
-  const ville = (a.ville || a.codePostal || 'unknown').toLowerCase().trim()
-  const prixBucket = Math.round(a.prix / (a.prix * 0.05)) // 5% buckets
-  const surfaceBucket = a.surface ? Math.round(a.surface / 3) : 0 // 3m² buckets
+  // Normalize ville
+  const ville = normalizeVille(a.ville || a.codePostal || 'unknown')
 
-  return `${ville}-${prixBucket}-${surfaceBucket}`
+  // Price bucket: ±10% → round to nearest 10k
+  const prixBucket = Math.round(a.prix / 10000)
+
+  // Surface bucket: ±5% → round to nearest 5m²
+  const surfaceBucket = a.surface ? Math.round(a.surface / 5) : 0
+
+  // Pieces
+  const pieces = a.nbPieces || 0
+
+  return `${ville}-${prixBucket}-${surfaceBucket}-${pieces}`
+}
+
+function normalizeVille(ville: string): string {
+  return ville
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim()
 }
 
 function qualityScore(a: Annonce): number {
   let score = 0
-  if (a.photos.length > 0) score += a.photos.length
-  if (a.description) score += 2
-  if (a.surface) score += 2
-  if (a.dpe) score += 2
-  if (a.latitude && a.longitude) score += 3
-  if (a.nbPieces) score += 1
+  if (a.photos.length > 0) score += a.photos.length * 2
+  if (a.description && a.description.length > 50) score += 5
+  if (a.surface) score += 3
+  if (a.dpe) score += 3
+  if (a.latitude && a.longitude) score += 4
+  if (a.nbPieces) score += 2
+  if (a.nbChambres) score += 2
+  if (a.etage !== undefined) score += 1
+  if (a.charges) score += 1
+  if (a.taxeFonciere) score += 1
+  if (a.datePublication) score += 1
   return score
 }

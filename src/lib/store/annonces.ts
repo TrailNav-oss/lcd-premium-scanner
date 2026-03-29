@@ -26,7 +26,7 @@ interface AnnoncesState {
   loading: boolean
   scraping: boolean
   lastScrapedAt: string | null
-  scrapeStats: { leboncoin: number; bienici: number; seloger: number; pap: number; total: number; excluded: number } | null
+  scrapeStats: { leboncoin: number; bienici: number; seloger: number; pap: number; total: number; excluded: number; geoFiltered?: number; newCount?: number; expiredCount?: number } | null
   scrapeErrors: string[]
   scrapeHint: string | null
   usingSeedData: boolean
@@ -136,6 +136,9 @@ export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
             pap: data.stats.pap,
             total: data.stats.afterMerge,
             excluded: data.stats.excluded || 0,
+            geoFiltered: data.stats.geoFiltered || 0,
+            newCount: data.stats.newCount || 0,
+            expiredCount: data.stats.expiredCount || 0,
           },
           scrapeErrors: data.errors || [],
           annonces: data.annonces || [],

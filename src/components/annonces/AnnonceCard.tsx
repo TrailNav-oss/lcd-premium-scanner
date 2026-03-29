@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Maximize, BedDouble, Zap, Clock, TrendingDown, Heart, ExternalLink } from 'lucide-react'
+import { MapPin, Maximize, BedDouble, Zap, Clock, TrendingDown, Heart, ExternalLink, Home } from 'lucide-react'
 import type { Annonce } from '@/types/annonce'
 import { PepiteBadge } from './PepiteScore'
 import { formatEuro, formatPercent } from '@/lib/utils'
@@ -44,8 +44,9 @@ export function AnnonceCard({ annonce }: { annonce: Annonce }) {
             unoptimized
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-brand-muted">
-            Pas de photo
+          <div className="w-full h-full flex flex-col items-center justify-center text-brand-muted bg-gradient-to-br from-brand-surface to-brand-card">
+            <Home size={32} className="mb-2 opacity-30" />
+            <span className="text-xs opacity-50">Pas de photo</span>
           </div>
         )}
 

@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useAnnoncesStore } from '@/lib/store/annonces'
 import { AnnonceCard } from '@/components/annonces/AnnonceCard'
 import { AnnonceFilters } from '@/components/annonces/AnnonceFilters'
+import { SourceHealthBar } from '@/components/annonces/SourceHealthBar'
 import { cn } from '@/lib/utils'
 
 export default function AnnoncesPage() {
@@ -73,6 +74,11 @@ export default function AnnoncesPage() {
         </div>
       </div>
 
+      {/* Source health indicator */}
+      <div className="mb-4">
+        <SourceHealthBar />
+      </div>
+
       {/* Scrape hint (seed data notice) */}
       {scrapeHint && (
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-4">
@@ -95,24 +101,35 @@ export default function AnnoncesPage() {
               <span>SeLoger : <strong className="text-brand-text">{scrapeStats.seloger}</strong></span>
               <span>PAP : <strong className="text-brand-text">{scrapeStats.pap}</strong></span>
               <span>Total : <strong className="text-brand-gold">{scrapeStats.total}</strong></span>
+              {(scrapeStats.newCount ?? 0) > 0 && (
+                <span>Nouvelles : <strong className="text-green-400">{scrapeStats.newCount}</strong></span>
+              )}
+              {(scrapeStats.expiredCount ?? 0) > 0 && (
+                <span>Expirees : <strong className="text-brand-muted">{scrapeStats.expiredCount}</strong></span>
+              )}
             </>
           )}
           {scrapeStats.excluded > 0 && (
             <span>Exclus (viager, etc.) : <strong className="text-orange-400">{scrapeStats.excluded}</strong></span>
           )}
+          {(scrapeStats.geoFiltered ?? 0) > 0 && (
+            <span>Hors zone (&gt;50km) : <strong className="text-brand-muted">{scrapeStats.geoFiltered}</strong></span>
+          )}
         </div>
       )}
 
-      {/* Scrape errors — only show if we got real data (not just seed fallback) */}
+      {/* Scrape errors — condensed summary */}
       {scrapeErrors.length > 0 && !usingSeedData && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4">
-          <div className="flex items-center gap-2 text-red-400 text-sm font-medium mb-1">
-            <AlertTriangle size={14} /> Erreurs de scan
+        <details className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 mb-4">
+          <summary className="flex items-center gap-2 text-orange-400 text-sm font-medium cursor-pointer">
+            <AlertTriangle size={14} /> {scrapeErrors.length} source{scrapeErrors.length > 1 ? 's' : ''} indisponible{scrapeErrors.length > 1 ? 's' : ''}
+          </summary>
+          <div className="mt-2 space-y-0.5">
+            {scrapeErrors.map((err, i) => (
+              <p key={i} className="text-xs text-orange-300">{err}</p>
+            ))}
           </div>
-          {scrapeErrors.map((err, i) => (
-            <p key={i} className="text-xs text-red-300">{err}</p>
-          ))}
-        </div>
+        </details>
       )}
 
       {/* Filters */}

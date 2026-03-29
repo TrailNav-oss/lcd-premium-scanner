@@ -2,6 +2,7 @@ import type { RawAnnonce } from './types'
 import type { Annonce } from '@/types/annonce'
 import { enrichAnnonce } from '../scoring/pepite'
 import { detectSaleType } from './salefilter'
+import { isWithinRadius, isCPInRadius, isCPOutOfRadius } from '../geo'
 import zonesData from '@/data/zones-bourgoin.json'
 import type { Zone } from '@/types/zone'
 
@@ -57,6 +58,23 @@ function calculateJoursEnLigne(datePublication?: string): number | undefined {
   return Math.floor((now.getTime() - pubDate.getTime()) / (1000 * 60 * 60 * 24))
 }
 
+/** Vérifie si une annonce est dans le rayon géographique */
+function isInGeoRadius(raw: RawAnnonce): boolean {
+  // Si on a des coordonnées GPS, utiliser haversine
+  if (raw.latitude && raw.longitude) {
+    return isWithinRadius(raw.latitude, raw.longitude)
+  }
+
+  // Si on a un code postal, vérifier les listes
+  if (raw.codePostal) {
+    if (isCPOutOfRadius(raw.codePostal)) return false
+    if (isCPInRadius(raw.codePostal)) return true
+  }
+
+  // Par défaut, garder (on ne peut pas vérifier)
+  return true
+}
+
 export function normalizeAnnonce(raw: RawAnnonce): Annonce {
   const zoneSlug = findZoneSlug(raw)
   const joursEnLigne = calculateJoursEnLigne(raw.datePublication)
@@ -103,5 +121,7 @@ export function normalizeAnnonce(raw: RawAnnonce): Annonce {
 }
 
 export function normalizeAll(rawAnnonces: RawAnnonce[]): Annonce[] {
-  return rawAnnonces.map(normalizeAnnonce)
+  // Filtrer géographiquement AVANT normalisation
+  const inRadius = rawAnnonces.filter(isInGeoRadius)
+  return inRadius.map(normalizeAnnonce)
 }

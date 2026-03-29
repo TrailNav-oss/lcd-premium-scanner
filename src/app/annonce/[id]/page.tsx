@@ -26,6 +26,7 @@ export default function AnnonceDetailPage() {
   const params = useParams()
   const id = decodeURIComponent(params.id as string)
   const [annonce, setAnnonce] = useState<Annonce | null>(null)
+  const [similar, setSimilar] = useState<Annonce[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPhoto, setSelectedPhoto] = useState(0)
 
@@ -35,6 +36,7 @@ export default function AnnonceDetailPage() {
         const res = await fetch(`/api/annonces?id=${encodeURIComponent(id)}`)
         const data = await res.json()
         setAnnonce(data.annonce || null)
+        if (data.similar) setSimilar(data.similar)
       } catch { /* ignore */ }
       setLoading(false)
     }
@@ -51,9 +53,35 @@ export default function AnnonceDetailPage() {
 
   if (!annonce) {
     return (
-      <div className="p-8 text-center">
-        <h1 className="text-xl text-brand-text mb-4">Annonce introuvable</h1>
-        <Link href="/annonces" className="text-brand-gold hover:underline">Retour aux annonces</Link>
+      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+        <Link href="/annonces" className="inline-flex items-center gap-2 text-sm text-brand-muted hover:text-brand-gold mb-6">
+          <ArrowLeft size={16} /> Retour aux annonces
+        </Link>
+        <div className="bg-brand-card rounded-xl border border-brand-border p-8 text-center mb-8">
+          <h1 className="text-xl text-brand-text mb-2">Annonce introuvable</h1>
+          <p className="text-sm text-brand-muted mb-4">Cette annonce a peut-etre ete retiree ou n&apos;est plus disponible.</p>
+          <Link href="/annonces" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-brand-gold text-brand-bg hover:bg-brand-gold-light">
+            Voir toutes les annonces
+          </Link>
+        </div>
+        {similar.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-brand-text mb-4">Annonces similaires</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {similar.map(a => (
+                <Link key={a.id} href={`/annonce/${encodeURIComponent(a.id)}`} className="bg-brand-card rounded-xl border border-brand-border p-4 hover:border-brand-gold/30 transition-colors">
+                  <p className="text-lg font-bold text-brand-text">{formatEuro(a.prix)}</p>
+                  <p className="text-sm text-brand-muted line-clamp-1 mt-1">{a.title}</p>
+                  <div className="flex items-center gap-3 mt-2 text-xs text-brand-muted">
+                    {a.surface && <span>{a.surface} m²</span>}
+                    {a.ville && <span>{a.ville}</span>}
+                    {a.pepiteScore && <span className="text-brand-gold font-semibold">Score {a.pepiteScore}</span>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     )
   }

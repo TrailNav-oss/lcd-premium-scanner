@@ -1,25 +1,10 @@
 import type { RawAnnonce } from './types'
+import { selogerHeaders, fetchWithRetry, randomDelay } from './http-client'
 
-// SeLoger search API
-const SELOGER_API = 'https://www.seloger.com/list.htm'
-
-// SeLoger has a JSON endpoint behind their search
 const SELOGER_SEARCH_API = 'https://www.seloger.com/search/v1/search'
 
-const HEADERS = {
-  'Accept': 'application/json, text/plain, */*',
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  'Referer': 'https://www.seloger.com/',
-  'Origin': 'https://www.seloger.com',
-  'Accept-Language': 'fr-FR,fr;q=0.9',
-  'Accept-Encoding': 'gzip, deflate, br',
-  'Sec-Fetch-Dest': 'empty',
-  'Sec-Fetch-Mode': 'cors',
-  'Sec-Fetch-Site': 'same-origin',
-}
-
-// Codes INSEE communes autour de Bourgoin
-const COMMUNES = ['38053', '38193', '38537', '38515', '38138', '38509']
+// Codes INSEE communes autour de Bourgoin-Jallieu (rayon ~30km)
+const COMMUNES = ['38053', '38193', '38537', '38515', '38138', '38509', '38090', '38070']
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapAnnonce(ad: any): RawAnnonce | null {
@@ -65,28 +50,29 @@ export async function scrapeSeLoger(maxPages = 2): Promise<{ annonces: RawAnnonc
 
   for (let page = 1; page <= maxPages; page++) {
     try {
-      // Try the JSON search API
       const params = new URLSearchParams({
-        types: '1', // Appartement
-        projects: '2', // Achat
+        types: '1',
+        projects: '2',
         places: COMMUNES.map(c => `{ci:${c}}`).join('|'),
         price: '30000/200000',
         rooms: '1,2,3,4',
-        LISTING_TYPE_ID: '1', // Ancien
-        sortBy: '1', // Plus récent
+        LISTING_TYPE_ID: '1',
+        sortBy: '1',
         pageIndex: String(page),
         pageSize: '25',
       })
 
-      const res = await fetch(`${SELOGER_SEARCH_API}?${params}`, {
-        headers: HEADERS,
+      const res = await fetchWithRetry(`${SELOGER_SEARCH_API}?${params}`, {
+        headers: selogerHeaders(),
+        retries: 2,
+        backoffMs: 3000,
       })
 
       if (!res.ok) {
-        // Fallback: try alternative endpoint
-        const altRes = await fetch(
+        // Fallback endpoint
+        const altRes = await fetchWithRetry(
           `https://www.seloger.com/api/v1/listings?transactionType=buy&propertyTypes=flat&locations=${COMMUNES.join(',')}&priceMin=30000&priceMax=200000&page=${page}`,
-          { headers: HEADERS }
+          { headers: selogerHeaders(), retries: 1, backoffMs: 2000 }
         )
 
         if (!altRes.ok) {
@@ -111,7 +97,7 @@ export async function scrapeSeLoger(maxPages = 2): Promise<{ annonces: RawAnnonc
       }
 
       if (page < maxPages) {
-        await new Promise(r => setTimeout(r, 3000)) // SeLoger = rate limit strict
+        await randomDelay(3000, 6000)
       }
     } catch (e) {
       errors.push(`SeLoger page ${page}: ${e instanceof Error ? e.message : 'Unknown error'}`)
