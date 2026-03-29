@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Navbar } from '@/components/ui/Navbar'
+import { VersionBadge } from '@/components/ui/VersionBadge'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -42,6 +43,7 @@ export default function RootLayout({
         <main className="md:ml-64 pb-20 md:pb-0 min-h-screen">
           {children}
         </main>
+        <VersionBadge />
       </body>
     </html>
   )
