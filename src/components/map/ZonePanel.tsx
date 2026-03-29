@@ -37,6 +37,7 @@ export function ZonePanel({ zone, onClose }: ZonePanelProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Fermer"
             className="p-1 rounded-lg hover:bg-brand-card text-brand-muted hover:text-brand-text transition-colors"
           >
             <X size={20} />

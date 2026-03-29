@@ -11,6 +11,11 @@ const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   'Referer': 'https://www.seloger.com/',
   'Origin': 'https://www.seloger.com',
+  'Accept-Language': 'fr-FR,fr;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Sec-Fetch-Dest': 'empty',
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Site': 'same-origin',
 }
 
 // Codes INSEE communes autour de Bourgoin

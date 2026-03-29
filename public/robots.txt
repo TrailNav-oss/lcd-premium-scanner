@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://lcd-premium-scanner.vercel.app/sitemap.xml

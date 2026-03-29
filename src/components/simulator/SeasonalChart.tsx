@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts'
 import type { MonthlyData } from '@/types/simulation'
 import { formatEuro } from '@/lib/utils'
@@ -9,10 +10,17 @@ interface SeasonalChartProps {
 }
 
 export function SeasonalChart({ data }: SeasonalChartProps) {
+  // Avoid Recharts SSG render with 0 dimensions
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   return (
     <div className="bg-brand-card rounded-xl p-4">
       <h3 className="text-sm font-semibold text-brand-gold mb-4">Cash-flow mensuel (saisonnalite)</h3>
       <div className="h-64">
+        {!mounted ? (
+          <div className="w-full h-full flex items-center justify-center text-brand-muted text-sm">Chargement du graphique...</div>
+        ) : (
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#352d22" />
@@ -42,6 +50,7 @@ export function SeasonalChart({ data }: SeasonalChartProps) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+        )}
       </div>
       <div className="flex items-center justify-center gap-6 mt-3">
         <div className="flex items-center gap-2">

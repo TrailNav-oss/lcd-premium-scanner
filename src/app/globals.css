@@ -34,6 +34,11 @@ body {
   background: var(--brand-muted);
 }
 
+/* Safe area for mobile bottom nav (iPhone notch) */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Slider custom */
 input[type='range'] {
   accent-color: var(--brand-gold);

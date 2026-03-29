@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { X, ExternalLink, Maximize, BedDouble, Zap, Clock, TrendingDown, Calculator } from 'lucide-react'
 import type { Annonce } from '@/types/annonce'
 import { PepiteScore } from '@/components/annonces/PepiteScore'
@@ -36,15 +37,15 @@ export function AnnoncePopup({ annonce, onClose }: Props) {
               </span>
             )}
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-brand-card text-brand-muted hover:text-brand-text">
+          <button onClick={onClose} aria-label="Fermer" className="p-1 rounded-lg hover:bg-brand-card text-brand-muted hover:text-brand-text">
             <X size={18} />
           </button>
         </div>
 
         {/* Photo */}
         {annonce.photos.length > 0 && (
-          <div className="rounded-xl overflow-hidden mb-3 h-48">
-            <img src={annonce.photos[0]} alt={annonce.title} className="w-full h-full object-cover" />
+          <div className="relative rounded-xl overflow-hidden mb-3 h-48">
+            <Image src={annonce.photos[0]} alt={annonce.title} fill sizes="420px" className="object-cover" unoptimized />
           </div>
         )}
 

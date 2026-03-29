@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { MapPin, Maximize, BedDouble, Zap, Clock, TrendingDown, Heart, ExternalLink } from 'lucide-react'
 import type { Annonce } from '@/types/annonce'
 import { PepiteBadge } from './PepiteScore'
@@ -34,11 +35,13 @@ export function AnnonceCard({ annonce }: { annonce: Annonce }) {
       {/* Photo + badges */}
       <div className="relative h-44 bg-brand-surface overflow-hidden">
         {hasPhoto ? (
-          <img
+          <Image
             src={annonce.photos[0]}
             alt={annonce.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-brand-muted">
@@ -76,6 +79,7 @@ export function AnnonceCard({ annonce }: { annonce: Annonce }) {
         {/* Favorite button */}
         <button
           onClick={(e) => { e.preventDefault(); toggleFavorite(annonce.id) }}
+          aria-label={annonce.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           className="absolute bottom-2 right-2 p-1.5 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
         >
           <Heart size={16} className={annonce.isFavorite ? 'fill-red-500 text-red-500' : 'text-white'} />
@@ -133,6 +137,7 @@ export function AnnonceCard({ annonce }: { annonce: Annonce }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
+                aria-label={`Voir sur ${annonce.source}`}
                 className="hover:text-brand-gold"
               >
                 <ExternalLink size={12} />

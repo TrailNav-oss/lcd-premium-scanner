@@ -62,6 +62,7 @@ export function AnnonceFilters() {
 
           <button
             onClick={() => setFilter('sortOrder', filters.sortOrder === 'desc' ? 'asc' : 'desc')}
+            aria-label={filters.sortOrder === 'desc' ? 'Tri croissant' : 'Tri decroissant'}
             className="bg-brand-card border border-brand-border rounded-lg px-3 py-2.5 text-sm text-brand-text hover:bg-brand-border transition-colors"
           >
             {filters.sortOrder === 'desc' ? '↓' : '↑'}

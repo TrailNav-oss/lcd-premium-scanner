@@ -6,10 +6,10 @@ import { scrapePAP } from '@/lib/scraper/pap'
 import { generateSeedData } from '@/lib/scraper/seed'
 import { normalizeAll } from '@/lib/scraper/parser'
 import { deduplicateAnnonces } from '@/lib/scraper/dedup'
-import { writeFileSync, existsSync, readFileSync } from 'fs'
-import { join } from 'path'
+import type { Annonce } from '@/types/annonce'
 
-const DATA_FILE = join(process.cwd(), 'src', 'data', 'annonces-cache.json')
+// In-memory cache (persists across requests within the same serverless instance)
+let memoryCache: Annonce[] = []
 
 // Timeout pour les scrapers qui ne répondent pas
 const SCRAPER_TIMEOUT = 15000 // 15s
@@ -54,28 +54,36 @@ export async function GET() {
     // Normalize and score all annonces
     const normalized = normalizeAll(allRaw)
 
-    // If no real data scraped, include seed data (realistic market data)
-    const seedData = normalized.length < 5 ? generateSeedData() : []
+    // If no real data scraped, use seed data (realistic market data)
+    const usingSeedData = normalized.length < 5
+    const seedData = usingSeedData ? generateSeedData() : []
 
     // Combine real + seed, deduplicate
     const combined = [...normalized, ...seedData]
     const deduped = deduplicateAnnonces(combined)
 
-    // Merge with existing cache (preserve favorites, notes, price history)
-    const existing = loadCache()
-    const merged = mergeWithExisting(deduped, existing)
+    // Merge with in-memory cache (preserve favorites, notes, price history)
+    const merged = mergeWithExisting(deduped, memoryCache)
 
     // Sort by pepite score desc
     merged.sort((a, b) => (b.pepiteScore || 0) - (a.pepiteScore || 0))
 
-    // Save to cache file
-    saveCache(merged)
+    // Save to memory cache
+    memoryCache = merged
 
     // Count excluded (viager, etc.)
     const excluded = merged.filter(a => a.excludedByDefault).length
 
+    // Build helpful hint when scrapers fail
+    const scrapersDown = allErrors.length > 0 && normalized.length === 0
+    const hint = scrapersDown
+      ? 'Les sites immobiliers bloquent les requetes serveur (anti-bot). Les donnees affichees sont des annonces realistes basees sur le marche actuel. Pour du scraping reel, utilisez le script Playwright local : npx tsx scripts/scrape-local.ts'
+      : undefined
+
     return NextResponse.json({
       success: true,
+      usingSeedData,
+      hint,
       stats: {
         leboncoin: lbcResult.annonces.length,
         bienici: bieniciResult.annonces.length,
@@ -97,27 +105,10 @@ export async function GET() {
   }
 }
 
-function loadCache(): import('@/types/annonce').Annonce[] {
-  try {
-    if (existsSync(DATA_FILE)) {
-      return JSON.parse(readFileSync(DATA_FILE, 'utf-8'))
-    }
-  } catch { /* ignore */ }
-  return []
-}
-
-function saveCache(annonces: import('@/types/annonce').Annonce[]) {
-  try {
-    writeFileSync(DATA_FILE, JSON.stringify(annonces, null, 2))
-  } catch (e) {
-    console.error('Failed to save cache:', e)
-  }
-}
-
 function mergeWithExisting(
-  fresh: import('@/types/annonce').Annonce[],
-  existing: import('@/types/annonce').Annonce[]
-): import('@/types/annonce').Annonce[] {
+  fresh: Annonce[],
+  existing: Annonce[]
+): Annonce[] {
   const existingMap = new Map(existing.map(a => [a.id, a]))
 
   const merged = fresh.map(annonce => {

@@ -20,9 +20,14 @@ const HEADERS = {
   'Content-Type': 'application/json',
   'Accept': 'application/json',
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  'api_key': 'ba0c2dad52b3ec',
+  'api_key': process.env.LBC_API_KEY || 'ba0c2dad52b3ec',
   'Origin': 'https://www.leboncoin.fr',
   'Referer': 'https://www.leboncoin.fr/',
+  'Accept-Language': 'fr-FR,fr;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Sec-Fetch-Dest': 'empty',
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Site': 'same-site',
 }
 
 function parseDPE(attributes: Record<string, string>[]): string | undefined {

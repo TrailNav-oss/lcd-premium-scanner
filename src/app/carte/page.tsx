@@ -13,7 +13,7 @@ const MapView = dynamic(() => import('@/components/map/MapView').then(m => m.Map
 
 export default function CartePage() {
   return (
-    <div className="h-screen md:h-screen w-full">
+    <div className="h-[calc(100vh-4rem)] md:h-screen w-full">
       <MapView />
     </div>
   )

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowLeft, ExternalLink, MapPin, Maximize, BedDouble, Zap, Clock, TrendingDown, Heart, Building2 } from 'lucide-react'
 import type { Annonce } from '@/types/annonce'
 import type { Zone } from '@/types/zone'
@@ -31,10 +32,9 @@ export default function AnnonceDetailPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/annonces?activeOnly=false`)
+        const res = await fetch(`/api/annonces?id=${encodeURIComponent(id)}`)
         const data = await res.json()
-        const found = (data.annonces || []).find((a: Annonce) => a.id === id)
-        setAnnonce(found || null)
+        setAnnonce(data.annonce || null)
       } catch { /* ignore */ }
       setLoading(false)
     }
@@ -86,12 +86,16 @@ export default function AnnonceDetailPage() {
           {annonce.photos.length > 0 && (
             <div className="space-y-2">
               <div className="relative rounded-xl overflow-hidden bg-brand-surface h-72 md:h-96">
-                <img
+                <Image
                   src={annonce.photos[selectedPhoto]}
                   alt={annonce.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  className="object-cover"
+                  priority
+                  unoptimized
                 />
-                <span className="absolute top-3 left-3 text-xs bg-black/70 text-white px-2 py-0.5 rounded">
+                <span className="absolute top-3 left-3 text-xs bg-black/70 text-white px-2 py-0.5 rounded z-10">
                   {SOURCE_LABELS[annonce.source] || annonce.source}
                 </span>
               </div>
@@ -101,9 +105,10 @@ export default function AnnonceDetailPage() {
                     <button
                       key={i}
                       onClick={() => setSelectedPhoto(i)}
-                      className={`shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-colors ${i === selectedPhoto ? 'border-brand-gold' : 'border-transparent'}`}
+                      aria-label={`Photo ${i + 1}`}
+                      className={`shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-colors relative ${i === selectedPhoto ? 'border-brand-gold' : 'border-transparent'}`}
                     >
-                      <img src={photo} alt="" className="w-full h-full object-cover" />
+                      <Image src={photo} alt={`${annonce.title} - photo ${i + 1}`} fill sizes="80px" className="object-cover" unoptimized />
                     </button>
                   ))}
                 </div>

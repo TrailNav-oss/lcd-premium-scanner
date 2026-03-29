@@ -1,28 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { existsSync, readFileSync } from 'fs'
-import { join } from 'path'
 import type { Annonce } from '@/types/annonce'
 import { generateSeedData } from '@/lib/scraper/seed'
-
-const DATA_FILE = join(process.cwd(), 'src', 'data', 'annonces-cache.json')
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
 
-  // Load cached annonces, fallback to seed data
-  let annonces: Annonce[] = []
-  try {
-    if (existsSync(DATA_FILE)) {
-      annonces = JSON.parse(readFileSync(DATA_FILE, 'utf-8'))
-    }
-  } catch { /* empty */ }
-
-  // If no cache, use realistic seed data
-  if (annonces.length === 0) {
-    annonces = generateSeedData()
-  }
+  // Always use seed data (in-memory cache is handled by /api/scrape which returns annonces directly)
+  // This route serves as the filter/sort endpoint over seed data on cold start
+  const annonces: Annonce[] = generateSeedData()
 
   // Apply filters
   const prixMin = searchParams.get('prixMin') ? Number(searchParams.get('prixMin')) : undefined
@@ -41,6 +28,13 @@ export async function GET(request: NextRequest) {
   const sortBy = searchParams.get('sortBy') || 'pepiteScore'
   const sortOrder = searchParams.get('sortOrder') || 'desc'
   const search = searchParams.get('search')
+  const id = searchParams.get('id') // fetch single annonce by id
+
+  // Single annonce lookup
+  if (id) {
+    const found = annonces.find(a => a.id === id)
+    return NextResponse.json({ annonce: found || null })
+  }
 
   let filtered = annonces
 

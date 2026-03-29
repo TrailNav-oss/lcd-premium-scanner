@@ -111,7 +111,10 @@ export function MapView() {
           box-shadow: 0 0 20px ${getScoreColor(zone.scoreLCD)}44;
           z-index: 10;
         `
-        el.innerHTML = `<span style="color: ${getScoreColor(zone.scoreLCD)}; font-weight: 700; font-size: 16px;">${zone.scoreLCD}</span>`
+        const span = document.createElement('span')
+        span.style.cssText = `color: ${getScoreColor(zone.scoreLCD)}; font-weight: 700; font-size: 16px;`
+        span.textContent = String(zone.scoreLCD)
+        el.appendChild(span)
         el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.2)' })
         el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)' })
         el.addEventListener('click', (e) => {

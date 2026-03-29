@@ -13,6 +13,12 @@ const HEADERS = {
   'Accept': 'application/json',
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   'Referer': 'https://www.bienici.com/',
+  'Origin': 'https://www.bienici.com',
+  'Accept-Language': 'fr-FR,fr;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Sec-Fetch-Dest': 'empty',
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Site': 'same-origin',
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

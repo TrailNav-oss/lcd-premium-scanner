@@ -28,6 +28,8 @@ interface AnnoncesState {
   lastScrapedAt: string | null
   scrapeStats: { leboncoin: number; bienici: number; seloger: number; pap: number; total: number; excluded: number } | null
   scrapeErrors: string[]
+  scrapeHint: string | null
+  usingSeedData: boolean
 
   setFilter: <K extends keyof AnnoncesFilters>(key: K, value: AnnoncesFilters[K]) => void
   resetFilters: () => void
@@ -55,6 +57,9 @@ const DEFAULT_FILTERS: AnnoncesFilters = {
   sortOrder: 'desc',
 }
 
+// Debounce timer for filter changes
+let fetchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
 export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
   annonces: [],
   filters: { ...DEFAULT_FILTERS },
@@ -63,11 +68,16 @@ export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
   lastScrapedAt: null,
   scrapeStats: null,
   scrapeErrors: [],
+  scrapeHint: null,
+  usingSeedData: false,
 
   setFilter: (key, value) => {
     set((state) => ({ filters: { ...state.filters, [key]: value } }))
-    // Re-fetch with new filters
-    get().fetchAnnonces()
+    // Debounced re-fetch (300ms)
+    if (fetchDebounceTimer) clearTimeout(fetchDebounceTimer)
+    fetchDebounceTimer = setTimeout(() => {
+      get().fetchAnnonces()
+    }, 300)
   },
 
   resetFilters: () => {
@@ -107,7 +117,7 @@ export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
   },
 
   triggerScrape: async () => {
-    set({ scraping: true, scrapeErrors: [] })
+    set({ scraping: true, scrapeErrors: [], scrapeHint: null })
 
     try {
       const res = await fetch('/api/scrape')
@@ -117,6 +127,8 @@ export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
         set({
           scraping: false,
           lastScrapedAt: new Date().toISOString(),
+          usingSeedData: data.usingSeedData || false,
+          scrapeHint: data.hint || null,
           scrapeStats: {
             leboncoin: data.stats.leboncoin,
             bienici: data.stats.bienici,

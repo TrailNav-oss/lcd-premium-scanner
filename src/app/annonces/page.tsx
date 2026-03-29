@@ -9,7 +9,7 @@ import { AnnonceFilters } from '@/components/annonces/AnnonceFilters'
 import { cn } from '@/lib/utils'
 
 export default function AnnoncesPage() {
-  const { annonces, loading, scraping, lastScrapedAt, scrapeStats, scrapeErrors, fetchAnnonces, triggerScrape } = useAnnoncesStore()
+  const { annonces, loading, scraping, lastScrapedAt, scrapeStats, scrapeErrors, scrapeHint, usingSeedData, fetchAnnonces, triggerScrape } = useAnnoncesStore()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   useEffect(() => {
@@ -73,22 +73,38 @@ export default function AnnoncesPage() {
         </div>
       </div>
 
+      {/* Scrape hint (seed data notice) */}
+      {scrapeHint && (
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-4">
+          <div className="flex items-center gap-2 text-blue-400 text-sm font-medium mb-1">
+            <AlertTriangle size={14} /> Mode demonstration
+          </div>
+          <p className="text-xs text-blue-300">{scrapeHint}</p>
+        </div>
+      )}
+
       {/* Scrape stats */}
       {scrapeStats && (
         <div className="bg-brand-card rounded-lg border border-brand-border p-3 mb-4 flex flex-wrap gap-4 text-xs text-brand-muted">
-          <span>LeBonCoin : <strong className="text-brand-text">{scrapeStats.leboncoin}</strong></span>
-          <span>Bien&apos;ici : <strong className="text-brand-text">{scrapeStats.bienici}</strong></span>
-          <span>SeLoger : <strong className="text-brand-text">{scrapeStats.seloger}</strong></span>
-          <span>PAP : <strong className="text-brand-text">{scrapeStats.pap}</strong></span>
-          <span>Total : <strong className="text-brand-gold">{scrapeStats.total}</strong></span>
+          {usingSeedData ? (
+            <span>Donnees de marche realistes : <strong className="text-brand-gold">{scrapeStats.total}</strong> annonces</span>
+          ) : (
+            <>
+              <span>LeBonCoin : <strong className="text-brand-text">{scrapeStats.leboncoin}</strong></span>
+              <span>Bien&apos;ici : <strong className="text-brand-text">{scrapeStats.bienici}</strong></span>
+              <span>SeLoger : <strong className="text-brand-text">{scrapeStats.seloger}</strong></span>
+              <span>PAP : <strong className="text-brand-text">{scrapeStats.pap}</strong></span>
+              <span>Total : <strong className="text-brand-gold">{scrapeStats.total}</strong></span>
+            </>
+          )}
           {scrapeStats.excluded > 0 && (
             <span>Exclus (viager, etc.) : <strong className="text-orange-400">{scrapeStats.excluded}</strong></span>
           )}
         </div>
       )}
 
-      {/* Scrape errors */}
-      {scrapeErrors.length > 0 && (
+      {/* Scrape errors — only show if we got real data (not just seed fallback) */}
+      {scrapeErrors.length > 0 && !usingSeedData && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4">
           <div className="flex items-center gap-2 text-red-400 text-sm font-medium mb-1">
             <AlertTriangle size={14} /> Erreurs de scan

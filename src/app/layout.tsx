@@ -5,9 +5,29 @@ import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const SITE_URL = 'https://lcd-premium-scanner.vercel.app'
+
 export const metadata: Metadata = {
   title: 'LCD Premium Scanner — Investissement Airbnb',
   description: 'Dashboard d\'analyse immobiliere pour investissement en Location Courte Duree premium. Bourgoin-Jallieu et environs.',
+  metadataBase: new URL(SITE_URL),
+  openGraph: {
+    title: 'LCD Premium Scanner',
+    description: 'Trouvez, analysez et simulez vos investissements en Location Courte Duree premium autour de Bourgoin-Jallieu.',
+    url: SITE_URL,
+    siteName: 'LCD Premium Scanner',
+    locale: 'fr_FR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'LCD Premium Scanner',
+    description: 'Dashboard d\'analyse immobiliere LCD — Bourgoin-Jallieu',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({
