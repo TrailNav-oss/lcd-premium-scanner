@@ -1,4 +1,70 @@
-// HTTP client robuste pour scraping — rotation UA, headers navigateur, retry backoff, délai aléatoire
+// HTTP client robuste pour scraping — rotation UA, headers navigateur, retry backoff, délai aléatoire, circuit breaker
+
+import { logger } from '@/lib/logger'
+import { notifyCircuitBreakerOpen } from '@/lib/telegram'
+
+// ---------------------------------------------------------------------------
+// Circuit breaker — skip a source after N consecutive failures (403/503)
+// ---------------------------------------------------------------------------
+const CIRCUIT_BREAKER_THRESHOLD = 3
+
+interface CircuitState {
+  consecutiveFailures: number
+  openUntil: number // timestamp ms — circuit stays open until this time
+  lastError: string | null
+}
+
+const circuits: Record<string, CircuitState> = {}
+
+export function getCircuit(source: string): CircuitState {
+  if (!circuits[source]) {
+    circuits[source] = { consecutiveFailures: 0, openUntil: 0, lastError: null }
+  }
+  return circuits[source]
+}
+
+/** Returns true if the circuit is open (source should be skipped). */
+export function isCircuitOpen(source: string): boolean {
+  const c = getCircuit(source)
+  if (c.consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD && Date.now() < c.openUntil) {
+    return true
+  }
+  // Auto-reset if cooldown expired
+  if (c.openUntil > 0 && Date.now() >= c.openUntil) {
+    c.consecutiveFailures = 0
+    c.openUntil = 0
+    c.lastError = null
+  }
+  return false
+}
+
+export function recordCircuitFailure(source: string, error: string) {
+  const c = getCircuit(source)
+  c.consecutiveFailures++
+  c.lastError = error
+  if (c.consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD) {
+    // Open circuit for 5 minutes
+    c.openUntil = Date.now() + 5 * 60 * 1000
+    logger.warn({ source, consecutiveFailures: c.consecutiveFailures, cooldownMin: 5 },
+      'Circuit breaker OPEN — skipping source')
+    notifyCircuitBreakerOpen(source, c.consecutiveFailures).catch(() => {})
+  }
+}
+
+export function recordCircuitSuccess(source: string) {
+  const c = getCircuit(source)
+  c.consecutiveFailures = 0
+  c.openUntil = 0
+  c.lastError = null
+}
+
+export function getCircuitStates(): Record<string, CircuitState> {
+  return { ...circuits }
+}
+
+// ---------------------------------------------------------------------------
+// User-Agent rotation
+// ---------------------------------------------------------------------------
 
 const USER_AGENTS = [
   // Chrome Desktop récents

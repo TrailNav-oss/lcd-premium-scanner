@@ -117,11 +117,19 @@ export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
   },
 
   triggerScrape: async () => {
+    // Guard: don't trigger if already scraping client-side
+    if (get().scraping) return
     set({ scraping: true, scrapeErrors: [], scrapeHint: null })
 
     try {
       const res = await fetch('/api/scrape')
       const data = await res.json()
+
+      // 409 = scan already running server-side (mutex)
+      if (res.status === 409) {
+        set({ scraping: false, scrapeErrors: [data.error || 'Scan deja en cours'] })
+        return
+      }
 
       if (data.success) {
         set({
