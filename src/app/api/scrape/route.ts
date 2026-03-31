@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { scrapeLeBonCoin } from '@/lib/scraper/leboncoin'
 import { scrapeBienIci } from '@/lib/scraper/bienici'
 import { scrapeSeLoger } from '@/lib/scraper/seloger'
@@ -169,6 +170,12 @@ export async function GET() {
     const errMsg = e instanceof Error ? e.message : 'Unknown error'
     log.error({ err: errMsg }, 'Scan failed with unhandled error')
     releaseScanLock('failed', errMsg)
+
+    // Sentry error tracking with context
+    Sentry.captureException(e, {
+      tags: { component: 'scraper', scanId },
+      extra: { scanId, scrapers: SCRAPERS.map(s => s.source) },
+    })
 
     // Telegram alert on critical failure
     notifyScanError(scanId, errMsg, []).catch(() => {})
