@@ -41,12 +41,16 @@ export default function AnnoncesPage() {
           <div className="flex bg-brand-card border border-brand-border rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('grid')}
+              aria-label="Affichage grille"
+              aria-pressed={viewMode === 'grid'}
               className={cn('p-2 rounded', viewMode === 'grid' ? 'bg-brand-gold/10 text-brand-gold' : 'text-brand-muted')}
             >
               <LayoutGrid size={16} />
             </button>
             <button
               onClick={() => setViewMode('list')}
+              aria-label="Affichage liste"
+              aria-pressed={viewMode === 'list'}
               className={cn('p-2 rounded', viewMode === 'list' ? 'bg-brand-gold/10 text-brand-gold' : 'text-brand-muted')}
             >
               <List size={16} />
@@ -137,10 +141,34 @@ export default function AnnoncesPage() {
         <AnnonceFilters />
       </div>
 
-      {/* Loading state */}
+      {/* Loading state — skeleton */}
       {loading && annonces.length === 0 && (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="animate-spin text-brand-gold" />
+        <div className={cn(
+          viewMode === 'grid'
+            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+            : 'space-y-3'
+        )}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-brand-card rounded-xl border border-brand-border overflow-hidden animate-pulse">
+              <div className="h-44 bg-brand-surface" />
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between">
+                  <div className="h-6 w-24 bg-brand-surface rounded" />
+                  <div className="h-4 w-16 bg-brand-surface rounded" />
+                </div>
+                <div className="h-4 w-3/4 bg-brand-surface rounded" />
+                <div className="flex gap-3">
+                  <div className="h-3 w-12 bg-brand-surface rounded" />
+                  <div className="h-3 w-12 bg-brand-surface rounded" />
+                  <div className="h-3 w-16 bg-brand-surface rounded" />
+                </div>
+                <div className="flex justify-between">
+                  <div className="h-3 w-28 bg-brand-surface rounded" />
+                  <div className="h-3 w-8 bg-brand-surface rounded" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

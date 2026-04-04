@@ -47,14 +47,11 @@ export async function GET() {
       checks,
       scan: {
         status: scan.status,
-        lastStarted: scan.startedAt,
-        lastFinished: scan.finishedAt,
       },
       cache: {
         annoncesCount: annonces.length,
       },
       sourcesUp,
-      openCircuits: openCircuits.map(([name]) => name),
       timestamp: new Date().toISOString(),
     },
     { status: hasError ? 503 : 200 }

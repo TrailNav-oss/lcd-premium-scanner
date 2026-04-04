@@ -156,7 +156,7 @@ export function lbcHeaders(extraHeaders?: Record<string, string>): Record<string
   return {
     ...buildBrowserHeaders('https://www.leboncoin.fr', 'https://www.leboncoin.fr/'),
     'Content-Type': 'application/json',
-    'api_key': process.env.LBC_API_KEY || 'ba0c2dad52b3ec',
+    'api_key': process.env.LBC_API_KEY || '',
     'Sec-Fetch-Site': 'same-site',
     ...extraHeaders,
   }

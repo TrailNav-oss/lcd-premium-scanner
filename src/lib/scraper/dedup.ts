@@ -23,7 +23,7 @@ export function deduplicateAnnonces(annonces: Annonce[]): Annonce[] {
 
     // Sort by quality score desc — best one wins
     group.sort((a, b) => qualityScore(b) - qualityScore(a))
-    const best = group[0]
+    const best = { ...group[0] }
 
     // Enrich with "also found on" info
     const otherSources = group

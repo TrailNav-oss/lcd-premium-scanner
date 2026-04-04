@@ -13,15 +13,21 @@ export async function GET(request: NextRequest) {
   const annonces: Annonce[] = cached.length > 0 ? cached : generateSeedData()
 
   // Apply filters
-  const prixMin = searchParams.get('prixMin') ? Number(searchParams.get('prixMin')) : undefined
-  const prixMax = searchParams.get('prixMax') ? Number(searchParams.get('prixMax')) : undefined
-  const surfaceMin = searchParams.get('surfaceMin') ? Number(searchParams.get('surfaceMin')) : undefined
-  const surfaceMax = searchParams.get('surfaceMax') ? Number(searchParams.get('surfaceMax')) : undefined
-  const nbPiecesMin = searchParams.get('nbPiecesMin') ? Number(searchParams.get('nbPiecesMin')) : undefined
+  const parseNum = (key: string): number | undefined => {
+    const raw = searchParams.get(key)
+    if (raw === null) return undefined
+    const n = Number(raw)
+    return isNaN(n) ? undefined : n
+  }
+  const prixMin = parseNum('prixMin')
+  const prixMax = parseNum('prixMax')
+  const surfaceMin = parseNum('surfaceMin')
+  const surfaceMax = parseNum('surfaceMax')
+  const nbPiecesMin = parseNum('nbPiecesMin')
   const dpeMax = searchParams.get('dpeMax')
   const zone = searchParams.get('zone')
   const source = searchParams.get('source')
-  const scoreMin = searchParams.get('scoreMin') ? Number(searchParams.get('scoreMin')) : undefined
+  const scoreMin = parseNum('scoreMin')
   const activeOnly = searchParams.get('activeOnly') !== 'false'
   const favoritesOnly = searchParams.get('favoritesOnly') === 'true'
   const excludeNonStandard = searchParams.get('excludeNonStandard') !== 'false' // true by default

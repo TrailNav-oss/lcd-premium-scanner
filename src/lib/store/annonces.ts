@@ -1,5 +1,8 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { track } from '@vercel/analytics'
 import type { Annonce, Source, SaleType } from '@/types/annonce'
+import { showToast } from '@/components/ui/Toast'
 
 export interface AnnoncesFilters {
   prixMin?: number
@@ -60,7 +63,7 @@ const DEFAULT_FILTERS: AnnoncesFilters = {
 // Debounce timer for filter changes
 let fetchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
-export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
+export const useAnnoncesStore = create<AnnoncesState>()(persist((set, get) => ({
   annonces: [],
   filters: { ...DEFAULT_FILTERS },
   loading: false,
@@ -132,6 +135,9 @@ export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
       }
 
       if (data.success) {
+        const total = data.stats?.afterMerge || 0
+        showToast(`Scan termine — ${total} annonce${total > 1 ? 's' : ''}`, 'success')
+        track('scan_completed', { total, usingSeedData: data.usingSeedData || false })
         set({
           scraping: false,
           lastScrapedAt: new Date().toISOString(),
@@ -152,9 +158,13 @@ export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
           annonces: data.annonces || [],
         })
       } else {
+        showToast(data.error || 'Erreur lors du scan', 'error')
+        track('scan_error', { error: data.error || 'unknown' })
         set({ scraping: false, scrapeErrors: [data.error] })
       }
     } catch (e) {
+      showToast('Erreur reseau lors du scan', 'error')
+      track('scan_error', { error: 'network' })
       set({ scraping: false, scrapeErrors: [e instanceof Error ? e.message : 'Erreur inconnue'] })
     }
   },
@@ -165,5 +175,21 @@ export const useAnnoncesStore = create<AnnoncesState>((set, get) => ({
         a.id === id ? { ...a, isFavorite: !a.isFavorite } : a
       ),
     }))
+  },
+}), {
+  name: 'lcd-favorites',
+  partialize: (state) => ({
+    // Only persist favorite IDs to keep storage small
+    _favoriteIds: state.annonces.filter(a => a.isFavorite).map(a => a.id),
+  }),
+  merge: (persisted, current) => {
+    const saved = persisted as { _favoriteIds?: string[] }
+    const favoriteIds = new Set(saved?._favoriteIds || [])
+    return {
+      ...current,
+      annonces: current.annonces.map(a =>
+        favoriteIds.has(a.id) ? { ...a, isFavorite: true } : a
+      ),
+    }
   },
 }))

@@ -32,10 +32,14 @@ export default function GuidePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div role="tablist" aria-label="Sections du guide" className="flex flex-wrap gap-2 mb-6">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
+            role="tab"
+            aria-selected={activeTab === id}
+            aria-controls={`tabpanel-${id}`}
+            id={`tab-${id}`}
             onClick={() => setActiveTab(id)}
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
@@ -51,10 +55,12 @@ export default function GuidePage() {
       </div>
 
       {/* Content */}
-      {activeTab === 'reno' && <RenovationGuide />}
-      {activeTab === 'regulation' && <RegulationChecklist />}
-      {activeTab === 'faq' && <InvestmentFAQ />}
-      {activeTab === 'stack' && <ManagementStack />}
+      <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
+        {activeTab === 'reno' && <RenovationGuide />}
+        {activeTab === 'regulation' && <RegulationChecklist />}
+        {activeTab === 'faq' && <InvestmentFAQ />}
+        {activeTab === 'stack' && <ManagementStack />}
+      </div>
     </div>
   )
 }

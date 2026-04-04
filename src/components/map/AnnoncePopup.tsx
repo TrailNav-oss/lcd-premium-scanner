@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { X, ExternalLink, Maximize, BedDouble, Zap, Clock, TrendingDown, Calculator } from 'lucide-react'
@@ -22,8 +23,14 @@ interface Props {
 }
 
 export function AnnoncePopup({ annonce, onClose }: Props) {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
   return (
-    <div className="absolute top-0 right-0 w-full md:w-[420px] h-full bg-brand-surface/95 backdrop-blur-sm border-l border-brand-border overflow-y-auto z-10">
+    <div role="dialog" aria-label={annonce.title} className="absolute top-0 right-0 w-full md:w-[420px] h-full bg-brand-surface/95 backdrop-blur-sm border-l border-brand-border overflow-y-auto z-10">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -45,7 +52,7 @@ export function AnnoncePopup({ annonce, onClose }: Props) {
         {/* Photo */}
         {annonce.photos.length > 0 && (
           <div className="relative rounded-xl overflow-hidden mb-3 h-48">
-            <Image src={annonce.photos[0]} alt={annonce.title} fill sizes="420px" className="object-cover" unoptimized />
+            <Image src={annonce.photos[0]} alt={annonce.title} fill sizes="420px" className="object-cover" />
           </div>
         )}
 

@@ -39,9 +39,11 @@ export function MapView() {
     setLoading(true)
     try {
       const res = await fetch('/api/annonces?excludeNonStandard=true&sortBy=pepiteScore&sortOrder=desc')
-      const data = await res.json()
-      setAnnonces(data.annonces || [])
-    } catch { /* ignore */ }
+      if (res.ok) {
+        const data = await res.json()
+        setAnnonces(data.annonces || [])
+      }
+    } catch { /* network error — keep empty */ }
     setLoading(false)
   }, [])
 
@@ -102,6 +104,9 @@ export function MapView() {
 
         // Zone marker
         const el = document.createElement('div')
+        el.setAttribute('role', 'button')
+        el.setAttribute('tabindex', '0')
+        el.setAttribute('aria-label', `Zone ${zone.name} — score LCD ${zone.scoreLCD}/10`)
         el.style.cssText = `
           width: 48px; height: 48px; border-radius: 50%;
           background: ${getScoreColor(zone.scoreLCD)}22;
@@ -117,12 +122,13 @@ export function MapView() {
         el.appendChild(span)
         el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.2)' })
         el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)' })
-        el.addEventListener('click', (e) => {
-          e.stopPropagation()
+        const activateZone = () => {
           setSelectedZone(zone)
           setSelectedAnnonce(null)
           map.flyTo({ center: [zone.lng, zone.lat], zoom: 13, duration: 800 })
-        })
+        }
+        el.addEventListener('click', (e) => { e.stopPropagation(); activateZone() })
+        el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateZone() } })
 
         new maplibregl.Marker({ element: el }).setLngLat([zone.lng, zone.lat]).addTo(map)
       })
@@ -151,6 +157,9 @@ export function MapView() {
       const color = getPepiteColor(score)
 
       const el = document.createElement('div')
+      el.setAttribute('role', 'button')
+      el.setAttribute('tabindex', '0')
+      el.setAttribute('aria-label', `${annonce.title} — ${Math.round(annonce.prix / 1000)}k€`)
       el.style.cssText = `
         width: 32px; height: 32px; border-radius: 50% 50% 50% 0;
         background: ${color}; transform: rotate(-45deg);
@@ -176,11 +185,12 @@ export function MapView() {
         el.style.transform = 'rotate(-45deg) scale(1)'
         el.style.zIndex = '5'
       })
-      el.addEventListener('click', (e) => {
-        e.stopPropagation()
+      const activateAnnonce = () => {
         setSelectedAnnonce(annonce)
         setSelectedZone(null)
-      })
+      }
+      el.addEventListener('click', (e) => { e.stopPropagation(); activateAnnonce() })
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateAnnonce() } })
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([annonce.longitude, annonce.latitude])
@@ -198,6 +208,8 @@ export function MapView() {
       <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
         <button
           onClick={() => setShowAnnonces(!showAnnonces)}
+          aria-label={showAnnonces ? 'Masquer les annonces sur la carte' : 'Afficher les annonces sur la carte'}
+          aria-pressed={showAnnonces}
           className={`px-3 py-2 rounded-lg text-xs font-medium shadow-lg transition-colors ${
             showAnnonces
               ? 'bg-brand-gold text-brand-bg'
@@ -211,6 +223,7 @@ export function MapView() {
           <button
             onClick={fetchAnnonces}
             disabled={loading}
+            aria-label="Charger les annonces"
             className="px-3 py-2 rounded-lg text-xs font-medium bg-brand-surface/90 text-brand-gold border border-brand-gold/20 shadow-lg"
           >
             {loading ? 'Chargement...' : 'Charger annonces'}

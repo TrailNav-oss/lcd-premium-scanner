@@ -6,7 +6,9 @@ import { MapPin, Maximize, BedDouble, Zap, Clock, TrendingDown, Heart, ExternalL
 import type { Annonce } from '@/types/annonce'
 import { PepiteBadge } from './PepiteScore'
 import { formatEuro, formatPercent } from '@/lib/utils'
+import { track } from '@vercel/analytics'
 import { useAnnoncesStore } from '@/lib/store/annonces'
+import { showToast } from '@/components/ui/Toast'
 
 const SOURCE_LABELS: Record<string, string> = {
   LEBONCOIN: 'LeBonCoin',
@@ -41,7 +43,7 @@ export function AnnonceCard({ annonce }: { annonce: Annonce }) {
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
-            unoptimized
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-brand-muted bg-gradient-to-br from-brand-surface to-brand-card">
@@ -79,7 +81,7 @@ export function AnnonceCard({ annonce }: { annonce: Annonce }) {
 
         {/* Favorite button */}
         <button
-          onClick={(e) => { e.preventDefault(); toggleFavorite(annonce.id) }}
+          onClick={(e) => { e.preventDefault(); toggleFavorite(annonce.id); showToast(annonce.isFavorite ? 'Retire des favoris' : 'Ajoute aux favoris', 'success'); track('favorite_toggle', { annonceId: annonce.id, action: annonce.isFavorite ? 'remove' : 'add' }) }}
           aria-label={annonce.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           className="absolute bottom-2 right-2 p-1.5 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
         >

@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { X, TrendingUp, Train, ShoppingBag, Users, Star, MapPin } from 'lucide-react'
 import type { Zone } from '@/types/zone'
 import { formatEuro } from '@/lib/utils'
@@ -23,8 +24,18 @@ function ScoreBadge({ label, score, max = 10 }: { label: string; score: number; 
 export function ZonePanel({ zone, onClose }: ZonePanelProps) {
   const nuitMoy = (zone.nuiteeMin + zone.nuiteeMax) / 2
 
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
   return (
-    <div className="absolute top-0 right-0 w-full md:w-96 h-full bg-brand-surface/95 backdrop-blur-sm border-l border-brand-border overflow-y-auto z-10">
+    <div
+      role="dialog"
+      aria-label={`Zone ${zone.name}`}
+      className="absolute top-0 right-0 w-full md:w-96 h-full bg-brand-surface/95 backdrop-blur-sm border-l border-brand-border overflow-y-auto z-10"
+    >
       <div className="p-5">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">

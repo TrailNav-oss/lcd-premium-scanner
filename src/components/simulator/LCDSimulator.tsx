@@ -8,6 +8,7 @@ import { CashflowBreakdown } from './CashflowBreakdown'
 import { formatEuro, formatPercent } from '@/lib/utils'
 
 interface SliderFieldProps {
+  id: string
   label: string
   value: number
   min: number
@@ -17,21 +18,25 @@ interface SliderFieldProps {
   onChange: (v: number) => void
 }
 
-function SliderField({ label, value, min, max, step, unit, onChange }: SliderFieldProps) {
+function SliderField({ id, label, value, min, max, step, unit, onChange }: SliderFieldProps) {
   const displayValue = unit === '€' ? formatEuro(value) : unit === '%' ? formatPercent(value, 1) : `${value} ${unit}`
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <label className="text-sm text-brand-muted">{label}</label>
+        <label htmlFor={id} className="text-sm text-brand-muted">{label}</label>
         <span className="text-sm font-semibold text-brand-text">{displayValue}</span>
       </div>
       <input
+        id={id}
         type="range"
         min={min}
         max={max}
         step={step}
         value={value}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-2 bg-brand-border rounded-full appearance-none cursor-pointer"
       />
@@ -78,33 +83,33 @@ export function LCDSimulator({ initialParams }: LCDSimulatorProps) {
           {/* Achat */}
           <div className="bg-brand-card rounded-xl p-4 space-y-4">
             <h3 className="text-sm font-semibold text-brand-gold">Achat & Renovation</h3>
-            <SliderField label="Prix d'achat" value={params.prixAchat} min={30000} max={200000} step={5000} unit="€" onChange={(v) => update('prixAchat', v)} />
-            <SliderField label="Budget renovation" value={params.budgetReno} min={0} max={50000} step={1000} unit="€" onChange={(v) => update('budgetReno', v)} />
-            <SliderField label="Apport personnel" value={params.apport} min={0} max={50000} step={1000} unit="€" onChange={(v) => update('apport', v)} />
+            <SliderField id="sim-prix-achat" label="Prix d'achat" value={params.prixAchat} min={30000} max={200000} step={5000} unit="€" onChange={(v) => update('prixAchat', v)} />
+            <SliderField id="sim-budget-reno" label="Budget renovation" value={params.budgetReno} min={0} max={50000} step={1000} unit="€" onChange={(v) => update('budgetReno', v)} />
+            <SliderField id="sim-apport" label="Apport personnel" value={params.apport} min={0} max={50000} step={1000} unit="€" onChange={(v) => update('apport', v)} />
           </div>
 
           {/* LCD */}
           <div className="bg-brand-card rounded-xl p-4 space-y-4">
             <h3 className="text-sm font-semibold text-brand-gold">Location Courte Duree</h3>
-            <SliderField label="Prix par nuitee" value={params.nuitee} min={30} max={120} step={1} unit="€" onChange={(v) => update('nuitee', v)} />
-            <SliderField label="Taux d'occupation" value={params.tauxOccupation} min={20} max={90} step={5} unit="%" onChange={(v) => update('tauxOccupation', v)} />
-            <SliderField label="Menage par passage" value={params.menageParPassage} min={20} max={80} step={5} unit="€" onChange={(v) => update('menageParPassage', v)} />
-            <SliderField label="Conciergerie" value={params.conciergeriePct} min={0} max={25} step={1} unit="%" onChange={(v) => update('conciergeriePct', v)} />
+            <SliderField id="sim-nuitee" label="Prix par nuitee" value={params.nuitee} min={30} max={120} step={1} unit="€" onChange={(v) => update('nuitee', v)} />
+            <SliderField id="sim-occupation" label="Taux d'occupation" value={params.tauxOccupation} min={20} max={90} step={5} unit="%" onChange={(v) => update('tauxOccupation', v)} />
+            <SliderField id="sim-menage" label="Menage par passage" value={params.menageParPassage} min={20} max={80} step={5} unit="€" onChange={(v) => update('menageParPassage', v)} />
+            <SliderField id="sim-conciergerie" label="Conciergerie" value={params.conciergeriePct} min={0} max={25} step={1} unit="%" onChange={(v) => update('conciergeriePct', v)} />
           </div>
 
           {/* Charges */}
           <div className="bg-brand-card rounded-xl p-4 space-y-4">
             <h3 className="text-sm font-semibold text-brand-gold">Charges & Fiscalite</h3>
-            <SliderField label="Charges mensuelles" value={params.chargesMensuelles} min={50} max={300} step={10} unit="€" onChange={(v) => update('chargesMensuelles', v)} />
-            <SliderField label="Taxe fonciere /an" value={params.taxeFonciere} min={200} max={1500} step={50} unit="€" onChange={(v) => update('taxeFonciere', v)} />
-            <SliderField label="CFE /an" value={params.cfe} min={0} max={1000} step={50} unit="€" onChange={(v) => update('cfe', v)} />
+            <SliderField id="sim-charges" label="Charges mensuelles" value={params.chargesMensuelles} min={50} max={300} step={10} unit="€" onChange={(v) => update('chargesMensuelles', v)} />
+            <SliderField id="sim-taxe" label="Taxe fonciere /an" value={params.taxeFonciere} min={200} max={1500} step={50} unit="€" onChange={(v) => update('taxeFonciere', v)} />
+            <SliderField id="sim-cfe" label="CFE /an" value={params.cfe} min={0} max={1000} step={50} unit="€" onChange={(v) => update('cfe', v)} />
           </div>
 
           {/* Crédit */}
           <div className="bg-brand-card rounded-xl p-4 space-y-4">
             <h3 className="text-sm font-semibold text-brand-gold">Credit immobilier</h3>
-            <SliderField label="Taux credit" value={params.tauxCredit} min={2} max={6} step={0.1} unit="%" onChange={(v) => update('tauxCredit', v)} />
-            <SliderField label="Duree credit" value={params.dureeCredit} min={10} max={25} step={1} unit="ans" onChange={(v) => update('dureeCredit', v)} />
+            <SliderField id="sim-taux-credit" label="Taux credit" value={params.tauxCredit} min={2} max={6} step={0.1} unit="%" onChange={(v) => update('tauxCredit', v)} />
+            <SliderField id="sim-duree-credit" label="Duree credit" value={params.dureeCredit} min={10} max={25} step={1} unit="ans" onChange={(v) => update('dureeCredit', v)} />
           </div>
         </div>
 

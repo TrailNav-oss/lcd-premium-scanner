@@ -32,8 +32,10 @@ export function AnnonceFilters() {
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted" />
           <input
+            id="search-annonces"
             type="text"
             placeholder="Rechercher (ville, adresse, mot-cle)..."
+            aria-label="Rechercher une annonce"
             value={filters.search}
             onChange={(e) => setFilter('search', e.target.value)}
             className="w-full bg-brand-card border border-brand-border rounded-lg pl-10 pr-4 py-2.5 text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:border-brand-gold/50"
@@ -41,6 +43,7 @@ export function AnnonceFilters() {
           {filters.search && (
             <button
               onClick={() => setFilter('search', '')}
+              aria-label="Effacer la recherche"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-text"
             >
               <X size={14} />
@@ -90,6 +93,7 @@ export function AnnonceFilters() {
           {activeFilterCount > 0 && (
             <button
               onClick={resetFilters}
+              aria-label="Reinitialiser les filtres"
               className="flex items-center gap-1 px-3 py-2.5 rounded-lg text-sm text-brand-muted hover:text-brand-text bg-brand-card border border-brand-border"
             >
               <RotateCcw size={14} />
@@ -137,18 +141,22 @@ export function AnnonceFilters() {
         <div className="bg-brand-card rounded-xl border border-brand-border p-4 grid md:grid-cols-3 gap-4">
           {/* Prix */}
           <div>
-            <label className="text-xs text-brand-muted mb-1 block">Prix</label>
+            <label htmlFor="filter-prix-min" className="text-xs text-brand-muted mb-1 block">Prix</label>
             <div className="flex gap-2">
               <input
+                id="filter-prix-min"
                 type="number"
                 placeholder="Min"
+                aria-label="Prix minimum"
                 value={filters.prixMin || ''}
                 onChange={(e) => setFilter('prixMin', e.target.value ? Number(e.target.value) : undefined)}
                 className="w-full bg-brand-surface border border-brand-border rounded px-2 py-1.5 text-sm text-brand-text"
               />
               <input
+                id="filter-prix-max"
                 type="number"
                 placeholder="Max"
+                aria-label="Prix max"
                 value={filters.prixMax || ''}
                 onChange={(e) => setFilter('prixMax', e.target.value ? Number(e.target.value) : undefined)}
                 className="w-full bg-brand-surface border border-brand-border rounded px-2 py-1.5 text-sm text-brand-text"
@@ -158,18 +166,22 @@ export function AnnonceFilters() {
 
           {/* Surface */}
           <div>
-            <label className="text-xs text-brand-muted mb-1 block">Surface (m²)</label>
+            <label htmlFor="filter-surface-min" className="text-xs text-brand-muted mb-1 block">Surface (m²)</label>
             <div className="flex gap-2">
               <input
+                id="filter-surface-min"
                 type="number"
                 placeholder="Min"
+                aria-label="Surface minimum"
                 value={filters.surfaceMin || ''}
                 onChange={(e) => setFilter('surfaceMin', e.target.value ? Number(e.target.value) : undefined)}
                 className="w-full bg-brand-surface border border-brand-border rounded px-2 py-1.5 text-sm text-brand-text"
               />
               <input
+                id="filter-surface-max"
                 type="number"
                 placeholder="Max"
+                aria-label="Surface max"
                 value={filters.surfaceMax || ''}
                 onChange={(e) => setFilter('surfaceMax', e.target.value ? Number(e.target.value) : undefined)}
                 className="w-full bg-brand-surface border border-brand-border rounded px-2 py-1.5 text-sm text-brand-text"
@@ -179,8 +191,9 @@ export function AnnonceFilters() {
 
           {/* Zone */}
           <div>
-            <label className="text-xs text-brand-muted mb-1 block">Zone</label>
+            <label htmlFor="filter-zone" className="text-xs text-brand-muted mb-1 block">Zone</label>
             <select
+              id="filter-zone"
               value={filters.zone || ''}
               onChange={(e) => setFilter('zone', e.target.value || undefined)}
               className="w-full bg-brand-surface border border-brand-border rounded px-2 py-1.5 text-sm text-brand-text"
@@ -194,8 +207,8 @@ export function AnnonceFilters() {
 
           {/* Pieces */}
           <div>
-            <label className="text-xs text-brand-muted mb-1 block">Pieces minimum</label>
-            <div className="flex gap-1">
+            <span className="text-xs text-brand-muted mb-1 block" id="label-pieces">Pieces minimum</span>
+            <div className="flex gap-1" role="group" aria-labelledby="label-pieces">
               {PIECES_OPTIONS.map(n => (
                 <button
                   key={n}
@@ -215,8 +228,8 @@ export function AnnonceFilters() {
 
           {/* DPE max */}
           <div>
-            <label className="text-xs text-brand-muted mb-1 block">DPE maximum</label>
-            <div className="flex gap-1">
+            <span className="text-xs text-brand-muted mb-1 block" id="label-dpe">DPE maximum</span>
+            <div className="flex gap-1" role="group" aria-labelledby="label-dpe">
               {DPE_OPTIONS.map(d => (
                 <button
                   key={d}
@@ -236,8 +249,9 @@ export function AnnonceFilters() {
 
           {/* Source */}
           <div>
-            <label className="text-xs text-brand-muted mb-1 block">Source</label>
+            <label htmlFor="filter-source" className="text-xs text-brand-muted mb-1 block">Source</label>
             <select
+              id="filter-source"
               value={filters.source || ''}
               onChange={(e) => setFilter('source', (e.target.value || undefined) as AnnoncesFilters['source'])}
               className="w-full bg-brand-surface border border-brand-border rounded px-2 py-1.5 text-sm text-brand-text"
@@ -252,8 +266,9 @@ export function AnnonceFilters() {
 
           {/* Score min */}
           <div>
-            <label className="text-xs text-brand-muted mb-1 block">Score pepite minimum</label>
+            <label htmlFor="filter-score-min" className="text-xs text-brand-muted mb-1 block">Score pepite minimum</label>
             <input
+              id="filter-score-min"
               type="range"
               min={0}
               max={100}
@@ -267,8 +282,9 @@ export function AnnonceFilters() {
 
           {/* Type de vente */}
           <div>
-            <label className="text-xs text-brand-muted mb-1 block">Type de vente</label>
+            <label htmlFor="filter-sale-type" className="text-xs text-brand-muted mb-1 block">Type de vente</label>
             <select
+              id="filter-sale-type"
               value={filters.saleType || ''}
               onChange={(e) => setFilter('saleType', (e.target.value || undefined) as AnnoncesFilters['saleType'])}
               className="w-full bg-brand-surface border border-brand-border rounded px-2 py-1.5 text-sm text-brand-text"

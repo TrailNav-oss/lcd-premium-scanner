@@ -213,7 +213,7 @@ export function generateSeedData(): Annonce[] {
     // Simulate price drop for old listings
     let prixInitial = template.prix
     if (template.joursEnLigne > 40) {
-      prixInitial = Math.round(template.prix * (1 + Math.random() * 0.15 + 0.05)) // 5-20% above current
+      prixInitial = Math.round(template.prix * (1 + (template.joursEnLigne % 15 + 5) / 100)) // deterministic 5-20% above current
     }
 
     const base: Annonce = {

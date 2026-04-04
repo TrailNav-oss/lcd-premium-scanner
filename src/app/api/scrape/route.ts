@@ -41,7 +41,16 @@ const SCRAPERS: ScraperDef[] = [
   { name: 'PAP',       source: 'PAP',       fn: scrapePAP,       maxPages: 2 },
 ]
 
-export async function GET() {
+export async function GET(request: Request) {
+  // --- Auth check: allow same-origin (UI), require secret for external calls ---
+  const secret = request.headers.get('x-scrape-secret')
+  const referer = request.headers.get('referer') || ''
+  const host = request.headers.get('host') || ''
+  const isSameOrigin = host && referer.includes(host)
+  if (process.env.SCRAPE_SECRET && !isSameOrigin && secret !== process.env.SCRAPE_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   // --- P0 fix #5: Scan mutex ---
   const scanId = acquireScanLock()
   if (!scanId) {

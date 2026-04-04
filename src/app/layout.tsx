@@ -4,9 +4,10 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Navbar } from '@/components/ui/Navbar'
 import { VersionBadge } from '@/components/ui/VersionBadge'
+import { ToastContainer } from '@/components/ui/Toast'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
 const SITE_URL = 'https://lcd-premium-scanner.vercel.app'
 
@@ -38,14 +39,42 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'LCD Premium Scanner',
+    description: 'Dashboard d\'analyse immobiliere pour investissement en Location Courte Duree premium. Bourgoin-Jallieu et environs.',
+    url: SITE_URL,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'EUR',
+    },
+    areaServed: {
+      '@type': 'City',
+      name: 'Bourgoin-Jallieu',
+      containedInPlace: {
+        '@type': 'AdministrativeArea',
+        name: 'Isere, France',
+      },
+    },
+  }
+
   return (
     <html lang="fr" className="dark">
+      <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      </head>
       <body className={`${inter.className} bg-brand-bg text-brand-text min-h-screen`}>
+        <a href="#main-content" className="skip-to-content">Aller au contenu</a>
         <Navbar />
-        <main className="md:ml-64 pb-20 md:pb-0 min-h-screen">
+        <main id="main-content" className="md:ml-64 pb-20 md:pb-0 min-h-screen">
           {children}
         </main>
         <VersionBadge />
+        <ToastContainer />
         <Analytics />
         <SpeedInsights />
       </body>
